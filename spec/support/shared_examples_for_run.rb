@@ -1,4 +1,5 @@
 require 'spec_helper'
+require 'tempfile'
 
 shared_examples "a tainted argument objector" do
 
@@ -59,6 +60,45 @@ shared_examples "a provider of process status" do
 
   it "returns the Process::Status of the command if it completes with a non-zero exit status" do
     expect(subject.run("false").success?).to eql false
+  end
+
+  it "returns the Process::Status of the command if it is killed by signal" do
+    exit_status = subject.run("sleep", "300") do |t|
+      Process.kill("SEGV", t.pid)
+    end
+    expect(exit_status.signaled?).to eql true
+  end
+
+  it "raises Errno::ENOENT if the command cannot be found" do
+    expect { subject.run('/nosuch\file/or\directory') }.to raise_error Errno::ENOENT
+  end
+
+  it "raises Errno::ENOENT if the command is a script with an interpreter that cannot be found" do
+    Tempfile.open('shexec') do |f|
+      f.chmod(0700)
+      f.write('#!/nosuch\file/or\directory')
+      f.close
+      expect { subject.run(f.path) }.to raise_error Errno::ENOENT
+    end
+  end
+
+  it "raises Errno::EACCES if the command is not executable" do
+    Tempfile.open('shexec') do |f|
+      expect { subject.run(f.path) }.to raise_error Errno::EACCES
+    end
+  end
+
+  it "raises Errno::EACCES if the command is a script with an interpreter that is not executable" do
+    Tempfile.open('shexec-shebang') do |x|
+      x.write("#!/bin/sh\nexit 0\n")
+      x.close
+      Tempfile.open('shexec') do |f|
+        f.chmod(0700)
+        f.write("#!#{x.path}")
+        f.close
+        expect { subject.run(f.path) }.to raise_error Errno::EACCES
+      end
+    end
   end
 
   it "does not perturb $?" do
