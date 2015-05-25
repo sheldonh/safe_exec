@@ -16,11 +16,12 @@ module Shexec
     def run(cmd, *args)
       assert_untainted_command(cmd, *args)
       @mutex.synchronize do
-        @threads = []
         Open3.popen3([cmd, cmd], *args) do |stdin, stdout, stderr, wait_thr|
-          @threads << pusher(@stdin, stdin)
-          @threads << drainer(stdout, @stdout)
-          @threads << drainer(stderr, @stderr)
+          @threads = [
+            pusher(@stdin, stdin),
+            drainer(stdout, @stdout),
+            drainer(stderr, @stderr)
+          ]
           @threads.each { |t| t.abort_on_exception = true }
 
           yield wait_thr if block_given?
