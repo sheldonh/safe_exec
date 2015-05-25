@@ -1,4 +1,5 @@
 require 'open3'
+require 'timeout'
 
 module Shexec
 
@@ -22,6 +23,10 @@ module Shexec
 
         wait_thr.value.tap { threads.each { |t| t.join } }
       end
+    end
+
+    def timeout(seconds, exception = Timeout::Error)
+      TimeoutDelegator.new(self, seconds, exception)
     end
 
     private
@@ -50,6 +55,31 @@ module Shexec
         components.each do |component|
           raise SecurityError.new("refusing to construct a command line from tainted component #{component}") if component.tainted?
         end
+      end
+
+      class TimeoutDelegator
+
+        def initialize(executor, timeout, exception)
+          @executor, @timeout, @exception = executor, timeout, exception
+        end
+
+        def run(cmd, *args)
+          @executor.run(cmd, *args) do |t|
+            begin
+              Timeout.timeout(@timeout, @exception) do
+                sleep(0) while t.alive?
+              end
+            rescue @exception => e
+              begin
+                Process.kill("TERM", t.pid)
+              rescue Errno::ESRCH
+              ensure
+                raise e
+              end
+            end
+          end
+        end
+
       end
 
   end

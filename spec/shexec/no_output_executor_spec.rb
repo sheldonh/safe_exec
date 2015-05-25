@@ -17,6 +17,7 @@ describe Shexec::NoOutputExecutor do
     it_behaves_like "a tainted argument objector"
     it_behaves_like "a process disconnected from the caller's stdin"
     it_behaves_like "an optionally non-blocking executor"
+    it_behaves_like "an optionally time-limiting executor"
     it_behaves_like "a provider of process status"
 
   end

@@ -1,6 +1,8 @@
 require 'spec_helper'
 require 'tempfile'
 
+class FascinatingTimeout < Timeout::Error; end
+
 shared_examples "a tainted argument objector" do
 
   it "raises a SecurityError if the command or arguments contain tainted strings" do
@@ -104,6 +106,22 @@ shared_examples "a provider of process status" do
   it "does not perturb $?" do
     system("true")
     expect { subject.run("true") }.to_not change { $?.pid }
+  end
+
+end
+
+shared_examples_for "an optionally time-limiting executor" do
+
+  it "raises Timeout::Error if the command exceeds the specified timeout" do
+    expect { subject.timeout(0.01).run("sleep", "300") }.to raise_error Timeout::Error
+  end
+
+  it "can optionally raise a specified timeout exception instead of Timeout::Error" do
+    expect { subject.timeout(0.01, FascinatingTimeout).run("sleep", "300") }.to raise_error FascinatingTimeout
+  end
+
+  it "does not interrupt the command if it completes within the timeout" do
+    expect(subject.timeout(300).run("cat").exitstatus).to eql 0
   end
 
 end
