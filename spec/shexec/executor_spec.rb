@@ -1,24 +1,14 @@
 require 'spec_helper'
 require 'stringio'
 
-# TODO Check whether rspec's output matcher has become thread-safe.
-# It would be wonderful to do
-#
-#   expect { shexec.run("echo", "Hello,", "world!") }.to output("Hello, world!\n").to_stdout
-#
-# But this issue prevents it: https://github.com/rspec/rspec-expectations/issues/642
-
 describe Shexec::Executor do
 
   describe "#run(cmd, *args)" do
 
     it "runs a command connected to $stdout and $stderr" do
       shexec = Shexec::Executor.new
-      expect($stdout).to receive(:write).with("Hello, world!\n")
-      shexec.run("echo", "Hello,", "world!")
-
-      expect($stderr).to receive(:write).with(match(/No such file or directory/))
-      shexec.run("cat", '/nosuch\file/or\directory')
+      expect { shexec.run("echo", "Hello,", "world!") }.to output("Hello, world!\n").to_stdout_from_any_process
+      expect { shexec.run("cat", '/nosuch\file/or\directory') }.to output(/No such file or directory/).to_stderr_from_any_process
     end
 
     it "does not pipe the caller's stdin into the command" do
@@ -27,9 +17,8 @@ describe Shexec::Executor do
       stdin_w.puts "Hello, world!\n"
       stdin_w.close
 
-      expect($stdout).to_not receive(:write).with("Hello, world!\n")
       shexec = Shexec::Executor.new
-      shexec.run("cat")
+      expect { shexec.run("cat") }.to_not output.to_stdout_from_any_process
     end
 
   end
