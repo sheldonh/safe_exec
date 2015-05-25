@@ -5,9 +5,7 @@ module Shexec
   class Executor < PipeExecutor
 
     def initialize
-      @stdin = StringIO.new.tap { |io| io.close }
-      @stdout = $stdout
-      @stderr = $stderr
+      super(StringIO.new.tap { |io| io.close }, $stdout, $stderr)
     end
 
   end

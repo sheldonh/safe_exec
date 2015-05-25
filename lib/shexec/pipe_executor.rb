@@ -1,5 +1,6 @@
 require 'open3'
 require 'timeout'
+require 'thread'
 
 module Shexec
 
@@ -9,24 +10,28 @@ module Shexec
 
     def initialize(stdin, stdout, stderr)
       @stdin, @stdout, @stderr = stdin, stdout, stderr
+      @mutex = Mutex.new
     end
 
     def run(cmd, *args)
-      assert_untainted_command(cmd, *args)
-      threads = []
-      Open3.popen3([cmd, cmd], *args) do |stdin, stdout, stderr, wait_thr|
-        threads << pusher(@stdin, stdin)
-        threads << drainer(stdout, @stdout)
-        threads << drainer(stderr, @stderr)
+      @mutex.synchronize do
+        @threads = []
+        assert_untainted_command(cmd, *args)
+        Open3.popen3([cmd, cmd], *args) do |stdin, stdout, stderr, wait_thr|
+          @threads << pusher(@stdin, stdin)
+          @threads << drainer(stdout, @stdout)
+          @threads << drainer(stderr, @stderr)
+          @threads.each { |t| t.abort_on_exception = true }
 
-        yield wait_thr if block_given?
+          yield wait_thr if block_given?
 
-        wait_thr.value.tap { threads.each { |t| t.join } }
+          wait_thr.value.tap { @threads.each { |t| t.join } }
+        end
       end
     end
 
     def timeout(seconds, exception = Timeout::Error)
-      TimeoutDelegator.new(self, seconds, exception)
+      TimeoutDelegate.new(self, seconds, exception)
     end
 
     private
@@ -57,7 +62,11 @@ module Shexec
         end
       end
 
-      class TimeoutDelegator
+      def abort
+        @threads.each { |t| t.kill }
+      end
+
+      class TimeoutDelegate
 
         def initialize(executor, timeout, exception)
           @executor, @timeout, @exception = executor, timeout, exception
@@ -72,6 +81,7 @@ module Shexec
               end
             rescue @exception => e
               begin
+                @executor.send(:abort)
                 Process.kill("TERM", t.pid)
               rescue Errno::ESRCH
               ensure
