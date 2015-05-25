@@ -66,7 +66,7 @@ shared_examples "a provider of process status" do
 
   it "returns the Process::Status of the command if it is killed by signal" do
     exit_status = subject.run("sleep", "300") do |t|
-      Process.kill("SEGV", t.pid)
+      Process.kill("TERM", t.pid)
     end
     expect(exit_status.signaled?).to eql true
   end
