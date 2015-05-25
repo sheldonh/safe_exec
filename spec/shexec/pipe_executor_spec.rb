@@ -35,6 +35,33 @@ describe Shexec::PipeExecutor do
       expect(stdout.string).to eql "Hello, world!\n"
     end
 
+    describe "deadlock prevention" do
+
+      let(:four_megabytes) { "x" * (4 * 1024 * 1024) }
+
+      it "prevents deadlock for output streams that don't block (e.g. StringIO, File)" do
+        subject.run("cat") do |t|
+          stdin_control.write four_megabytes
+          stdin_control.close
+        end
+        expect(stdout.string).to eql four_megabytes
+      end
+
+      context "when output streams block (e.g. they are undrained pipes)" do
+        let(:stdout_pipe) { IO.pipe }
+        let(:stdout) { stdout_pipe[1] }
+
+        it "can't prevent deadlock" do
+          expect { subject.timeout(0.5).run("cat") { |t|
+            stdin_control.write four_megabytes
+            stdin_control.close
+          } }.to raise_error Timeout::Error
+        end
+
+      end
+
+    end
+
     context do
       before(:each) { stdin_control.close }
       it_behaves_like "a tainted argument objector"
