@@ -14,9 +14,9 @@ module Shexec
     end
 
     def run(cmd, *args)
+      assert_untainted_command(cmd, *args)
       @mutex.synchronize do
         @threads = []
-        assert_untainted_command(cmd, *args)
         Open3.popen3([cmd, cmd], *args) do |stdin, stdout, stderr, wait_thr|
           @threads << pusher(@stdin, stdin)
           @threads << drainer(stdout, @stdout)
