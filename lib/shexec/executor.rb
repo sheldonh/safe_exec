@@ -1,4 +1,4 @@
-require "shexec/pipe_executor"
+require 'shexec/pipe_executor'
 
 module Shexec
 

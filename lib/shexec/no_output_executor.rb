@@ -1,3 +1,5 @@
+require 'shexec/executor'
+
 module Shexec
 
   class NoOutputExecutor < Executor

@@ -1,4 +1,4 @@
-Dir.glob(File.join(File.dirname(__FILE), "shexec", "**", "*.rb")) do |f|
+Dir.glob(File.join(File.dirname(__FILE__), "shexec", "**", "*.rb")) do |f|
   require f
 end
 
