@@ -21,6 +21,16 @@ describe Shexec::Executor do
       expect { shexec.run("cat") }.to_not output.to_stdout_from_any_process
     end
 
+    it "can be run in non-blocking mode" do
+      shexec = Shexec::Executor.new
+      shexec.run("cat") do |t|
+        while t.alive?
+          $stderr.puts "    ...doing something interesting while we wait for the process to complete"
+          sleep(0.01)
+        end
+      end
+    end
+
   end
 
 end
