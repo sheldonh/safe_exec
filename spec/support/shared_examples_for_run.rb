@@ -124,4 +124,9 @@ shared_examples_for "an optionally time-limiting executor" do
     expect(subject.timeout(300).run("cat").exitstatus).to eql 0
   end
 
+  it "supports non-blocking mode" do
+    nonblocking = false
+    expect { subject.timeout(300).run("cat") { |t| nonblocking = true } }.to change { nonblocking }
+  end
+
 end

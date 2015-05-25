@@ -67,7 +67,11 @@ module Shexec
           @executor.run(cmd, *args) do |t|
             begin
               Timeout.timeout(@timeout, @exception) do
-                sleep(0) while t.alive?
+                if block_given?
+                  yield t
+                else
+                  sleep(0.001) while t.alive?
+                end
               end
             rescue @exception => e
               begin
