@@ -80,13 +80,13 @@ shared_examples "a provider of process status" do
       f.chmod(0700)
       f.write('#!/nosuch\file/or\directory')
       f.close
-      expect { subject.run(f.path) }.to raise_error Errno::ENOENT
+      expect { subject.run(f.path.untaint) }.to raise_error Errno::ENOENT
     end
   end
 
   it "raises Errno::EACCES if the command is not executable" do
     Tempfile.open('shexec') do |f|
-      expect { subject.run(f.path) }.to raise_error Errno::EACCES
+      expect { subject.run(f.path.untaint) }.to raise_error Errno::EACCES
     end
   end
 
@@ -98,7 +98,7 @@ shared_examples "a provider of process status" do
         f.chmod(0700)
         f.write("#!#{x.path}")
         f.close
-        expect { subject.run(f.path) }.to raise_error Errno::EACCES
+        expect { subject.run(f.path.untaint) }.to raise_error Errno::EACCES
       end
     end
   end
