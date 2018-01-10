@@ -8,6 +8,7 @@ describe Shexec::StreamingExecutor do
 
   describe "#run(cmd, *args)" do
 
+    it_behaves_like "a command-with-arguments string objector"
     it_behaves_like "a tainted argument objector"
     it_behaves_like "a stdout and stderr streamer"
     it_behaves_like "a process disconnected from the caller's stdin"

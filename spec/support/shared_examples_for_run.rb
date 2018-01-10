@@ -3,6 +3,22 @@ require 'tempfile'
 
 class FascinatingTimeout < Timeout::Error; end
 
+shared_examples "a command-with-arguments string objector" do
+
+  it "allows commands with no arguments" do
+    expect(subject.run('echo').success?).to eql true
+  end
+
+  it "allows commands with argument vectors" do
+    expect(subject.run('echo', 'Hello', 'world').success?).to eql true
+  end
+
+  it "does not allow commands with arguments in a single string" do
+    expect { subject.run('echo Hello world') }.to raise_error Errno::ENOENT
+  end
+
+end
+
 shared_examples "a tainted argument objector" do
 
   it "raises a SecurityError if the command or arguments contain tainted strings" do

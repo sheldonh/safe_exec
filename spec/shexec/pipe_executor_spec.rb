@@ -64,6 +64,7 @@ describe Shexec::PipeExecutor do
 
     context do
       before(:each) { stdin_control.close }
+      it_behaves_like "a command-with-arguments string objector"
       it_behaves_like "a tainted argument objector"
       it_behaves_like "a stdout and stderr streamer"
       it_behaves_like "an optionally non-blocking executor"
