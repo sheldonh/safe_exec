@@ -1,16 +1,16 @@
 # coding: utf-8
 lib = File.expand_path('../lib', __FILE__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
-require 'shexec/version'
+require 'safe_exec/version'
 
 Gem::Specification.new do |spec|
-  spec.name          = "shexec"
-  spec.version       = Shexec::VERSION
+  spec.name          = "safe_exec"
+  spec.version       = SafeExec::VERSION
   spec.authors       = ["Sheldon Hearn"]
   spec.email         = ["sheldonh@starjuice.net"]
 
   spec.summary       = "Safe shell executor"
-  spec.homepage      = "https://github.com/sheldonh/shexec"
+  spec.homepage      = "https://github.com/sheldonh/safe_exec"
   spec.license       = "MIT"
 
   spec.files         = `git ls-files -z`.split("\x0").reject { |f| f.match(%r{^(test|spec|features)/}) }

@@ -1,6 +1,6 @@
-require 'shexec/pipe_executor'
+require 'safe_exec/pipe_executor'
 
-module Shexec
+module SafeExec
 
   class Executor < PipeExecutor
 

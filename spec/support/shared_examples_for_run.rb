@@ -92,7 +92,7 @@ shared_examples "a provider of process status" do
   end
 
   it "raises Errno::ENOENT if the command is a script with an interpreter that cannot be found" do
-    Tempfile.open('shexec') do |f|
+    Tempfile.open('safe_exec') do |f|
       f.chmod(0700)
       f.write('#!/nosuch\file/or\directory')
       f.close
@@ -101,16 +101,16 @@ shared_examples "a provider of process status" do
   end
 
   it "raises Errno::EACCES if the command is not executable" do
-    Tempfile.open('shexec') do |f|
+    Tempfile.open('safe_exec') do |f|
       expect { subject.run(f.path.untaint) }.to raise_error Errno::EACCES
     end
   end
 
   it "raises Errno::EACCES if the command is a script with an interpreter that is not executable" do
-    Tempfile.open('shexec-shebang') do |x|
+    Tempfile.open('safe_exec-shebang') do |x|
       x.write("#!/bin/sh\nexit 0\n")
       x.close
-      Tempfile.open('shexec') do |f|
+      Tempfile.open('safe_exec') do |f|
         f.chmod(0700)
         f.write("#!#{x.path}")
         f.close

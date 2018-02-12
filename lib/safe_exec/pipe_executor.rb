@@ -2,7 +2,7 @@ require 'open3'
 require 'timeout'
 require 'thread'
 
-module Shexec
+module SafeExec
 
   class PipeExecutor
 

@@ -1,6 +1,6 @@
-require 'shexec/executor'
+require 'safe_exec/executor'
 
-module Shexec
+module SafeExec
 
   class StreamingExecutor < Executor
 

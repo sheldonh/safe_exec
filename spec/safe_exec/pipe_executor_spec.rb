@@ -1,7 +1,7 @@
 require 'spec_helper'
 require 'stringio'
 
-describe Shexec::PipeExecutor do
+describe SafeExec::PipeExecutor do
 
   let(:control_pipe) { IO.pipe }
   let(:stdin_control) { control_pipe[1] }
