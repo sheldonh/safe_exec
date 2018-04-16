@@ -1,4 +1,5 @@
 require 'safe_exec/pipe_executor'
+require "stringio"
 
 module SafeExec
 
