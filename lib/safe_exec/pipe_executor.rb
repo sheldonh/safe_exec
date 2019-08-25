@@ -52,8 +52,13 @@ module SafeExec
       end
 
       def stream(input, output)
-        until input.closed? or input.eof?
-          output.write input.read(PAGE_SIZE)
+        until input.closed?
+          page = input.read(PAGE_SIZE)
+          if page
+            output.write(page)
+          else
+            break
+          end
         end
       end
 
